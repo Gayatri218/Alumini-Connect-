@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alumni Profile Summary</title>
+<style>
+  body { font-family:'Quicksand', sans-serif; background:#f0f4f8; margin:0; padding:0; }
+  .profile-container { max-width:800px; margin:50px auto; background:#fff; border-radius:12px; padding:30px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+  h1 { text-align:center; color:#0072ff; margin-bottom:20px; }
+  .field-group { display:flex; justify-content: space-between; margin-bottom:15px; }
+  .field-group label { font-weight:600; width:150px; color:#444; }
+  .field-group span { flex:1; }
+  #debugLog { background:#222; color:#0f0; font-family:monospace; padding:10px; margin-top:20px; max-height:200px; overflow-y:auto; border-radius:6px; }
+</style>
+</head>
+<body>
+
+<div class="profile-container">
+  <h1>My Profile</h1>
+  <div class="field-group"><label>Alumni ID</label><span id="alumniIdDisplay"></span></div>
+  <div class="field-group"><label>Name</label><span id="nameDisplay"></span></div>
+  <div class="field-group"><label>Email</label><span id="emailDisplay"></span></div>
+  <div class="field-group"><label>Batch</label><span id="batchDisplay"></span></div>
+  <div class="field-group"><label>Employment Status</label><span id="statDisplay"></span></div>
+  <div class="field-group"><label>Employer</label><span id="employerDisplay"></span></div>
+  <div class="field-group"><label>Occupation</label><span id="occupationDisplay"></span></div>
+  <div class="field-group"><label>Experience</label><span id="experienceDisplay"></span></div>
+  <div class="field-group"><label>Current Employer?</label><span id="currentEmployerDisplay"></span></div>
+  <div class="field-group"><label>Highest Degree</label><span id="highestDegreeDisplay"></span></div>
+  <div class="field-group"><label>Skills</label><span id="skillsDisplay"></span></div>
+  <div class="field-group"><label>Location</label><span id="locationDisplay"></span></div>
+  <div class="field-group"><label>Gender</label><span id="genderDisplay"></span></div>
+  <div class="field-group"><label>Date of Birth</label><span id="dobDisplay"></span></div>
+  <div class="field-group"><label>Field of Interest</label><span id="interestDisplay"></span></div>
+
+  <div id="debugLog"></div>
+</div>
+
+<script>
+const API_URL = "https://2iwsv0wlrj.execute-api.us-east-1.amazonaws.com/viewdetails";
+const debugLog = document.getElementById("debugLog");
+
+function logDebug(msg, data){
+  debugLog.innerHTML += `[${new Date().toISOString()}] ${msg} ${data ? JSON.stringify(data) : ""}<br>`;
+  console.log(msg, data);
+}
+
+// Get email from localStorage (user must have logged in)
+const email = localStorage.getItem("email");
+logDebug("Retrieved email from localStorage:", email);
+
+if(!email){
+  alert("No email found. Please login first.");
+  window.location.href="LoginForm.html";
+}
+
+// Populate profile fields
+function populateFields(data){
+  document.getElementById("alumniIdDisplay").textContent = data.alumniId || "";
+  document.getElementById("nameDisplay").textContent = data.name || "";
+  document.getElementById("emailDisplay").textContent = data.email || "";
+  document.getElementById("batchDisplay").textContent = data.batch || "";
+  document.getElementById("statDisplay").textContent = data.employmentStatus || "";
+  document.getElementById("employerDisplay").textContent = data.employer || "";
+  document.getElementById("occupationDisplay").textContent = data.occupation || "";
+  document.getElementById("experienceDisplay").textContent = data.experience || "";
+  document.getElementById("currentEmployerDisplay").textContent = data.currentEmployer || "";
+  document.getElementById("highestDegreeDisplay").textContent = data.highestDegree || "";
+  document.getElementById("skillsDisplay").textContent = data.skills || "";
+  document.getElementById("locationDisplay").textContent = data.location || "";
+  document.getElementById("genderDisplay").textContent = data.gender || "";
+  document.getElementById("dobDisplay").textContent = data.dob || "";
+  document.getElementById("interestDisplay").textContent = data.interest || "";
+}
+
+// Fetch profile from Lambda
+async function fetchProfile(){
+  try{
+    const res = await fetch(`${API_URL}?email=${encodeURIComponent(email)}`, { method:"GET"});
+    const data = await res.json();
+    if(res.ok){
+      populateFields(data);
+      logDebug("Profile fetched successfully", data);
+    } else {
+      logDebug("Fetch error:", data);
+      alert("Failed to fetch profile. See debug log.");
+    }
+  } catch(err){
+    logDebug("Fetch exception:", err);
+    alert("Failed to fetch profile. See debug log.");
+  }
+}
+
+// Fetch on page load
+fetchProfile();
+</script>
+
+</body>
+</html>

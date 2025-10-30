@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Account</title>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+<script src="javascript-files/amazon-cognito-identity.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css-files/bootstrap.min.css" />
+<style>
+body { font-family: 'Roboto', sans-serif; background:#519ff2d0; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+.verify-box { background:#fff; padding:40px; border-radius:12px; text-align:center; box-shadow:0px 6px 18px rgba(0,0,0,0.2); width:320px; }
+input { width:100%; padding:12px; margin:10px 0; border:1px solid #ccc; border-radius:6px; }
+button { width:100%; padding:12px; margin-top:15px; background:#007bff; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+</style>
+</head>
+
+<body>
+<div class="verify-box">
+  <h2>Verify Your Account</h2>
+  <input type="text" id="code" placeholder="Enter verification code"><br>
+  <button onclick="verifyCode()">Verify</button>
+  <p class="note">Check your email for the code</p>
+</div>
+
+<script>
+function verifyCode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const username = urlParams.get("username");
+  const role = urlParams.get("role");
+
+  if (!username) {
+    alert("No username provided. Please sign up again.");
+    return;
+  }
+
+  const poolData = { UserPoolId: "us-east-1_wZ1ovu0QY", ClientId: "1cdbrfng4l7pe7n60597rejh34" };
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+  const userData = { Username: username, Pool: userPool };
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+  cognitoUser.confirmRegistration(document.getElementById("code").value, true, function(err) {
+    if (err) {
+      alert(err.message || JSON.stringify(err));
+      return;
+    }
+
+    // ✅ Redirect immediately without alert
+    if (role === "Alumni") window.location.replace("Alumnidashboard.html");
+    else if (role === "Student") window.location.replace("Studentdashboard.html");
+    else window.location.replace("WebpageLayout.html");
+  });
+}
+</script>
+</body>
+</html>
